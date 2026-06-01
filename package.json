@@ -1,0 +1,52 @@
+{
+  "name": "social",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/main.js",
+  "scripts": {
+    "start:dev": "cross-env NODE_ENV=dev concurrently \"tsc --watch\" \"node --watch-path=. dist/main.js\"",
+    "start:prod": "cross-env NODE_ENV=prod concurrently \"tsc --watch\" \"node --watch-path=. dist/main.js\"",
+    "worker": "cross-env NODE_ENV=dev node dist/bootstrap/worker.bootstrap.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/dotenv": "^6.1.1",
+    "@types/express": "^5.0.6",
+    "@types/mime-types": "^3.0.1",
+    "@types/multer": "^2.1.0",
+    "@types/node": "^25.8.0",
+    "@types/nodemailer": "^8.0.0",
+    "concurrently": "^9.2.1"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1051.0",
+    "@aws-sdk/lib-storage": "^3.1051.0",
+    "@aws-sdk/s3-request-presigner": "^3.1051.0",
+    "bcrypt": "^6.0.0",
+    "bullmq": "^5.76.10",
+    "cors": "^2.8.6",
+    "cross-env": "^10.1.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
+    "firebase-admin": "^13.10.0",
+    "google-auth-library": "^10.6.2",
+    "graphql": "^16.14.0",
+    "graphql-http": "^1.22.4",
+    "helmet": "^8.1.0",
+    "ioredis": "^5.10.1",
+    "jsonwebtoken": "^9.0.3",
+    "libphonenumber-js": "^1.13.2",
+    "mongoose": "^9.6.2",
+    "multer": "^2.1.1",
+    "nodemailer": "^8.0.7",
+    "redis": "^5.12.1",
+    "socket.io": "^4.8.3",
+    "zod": "^4.4.3"
+  }
+}
