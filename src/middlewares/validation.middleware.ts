@@ -52,7 +52,7 @@ export const GQLValidate = async <T>({
 }: {
   schema: ZodType;
   args: T;
-}): Promise<boolean> => {
+}): Promise<T> => {
   const validationResult = schema.safeParse(args);
   if (!validationResult.success) {
     throw GQLError(
@@ -64,7 +64,7 @@ export const GQLValidate = async <T>({
     );
   }
 
-  return true;
+  return validationResult.data as T;
 };
 
 //socket validate

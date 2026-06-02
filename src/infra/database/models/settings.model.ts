@@ -7,6 +7,7 @@ import {
   LanguageEnum,
   ProfileVisibilityEnum,
 } from "../../../common/enums/profile.enums.js";
+import { ShowFollowEnum } from "../../../common/enums/settings.enums.js";
 
 const privacySchema = new Schema<IPrivacy>({
   profileVisibility: {
@@ -23,6 +24,16 @@ const privacySchema = new Schema<IPrivacy>({
   showJoinedAt: { type: Boolean, default: true },
   showEducation: { type: Boolean, default: true },
   showRelation: { type: Boolean, default: true },
+  showFollowersList: {
+    type: String,
+    enum: ShowFollowEnum,
+    default: ShowFollowEnum.ANYONE,
+  },
+  showFollowingsList: {
+    type: String,
+    enum: ShowFollowEnum,
+    default: ShowFollowEnum.ANYONE,
+  },
 });
 
 const settingsSchema = new Schema<ISettings>(

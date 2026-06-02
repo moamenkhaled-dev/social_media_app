@@ -1,4 +1,5 @@
 import type {
+  AggregateOptions,
   CreateOptions,
   DeleteResult,
   FlattenMaps,
@@ -7,6 +8,7 @@ import type {
   Model,
   MongooseBaseQueryOptions,
   MongooseUpdateQueryOptions,
+  PipelineStage,
   ProjectionType,
   QueryFilter,
   QueryOptions,
@@ -167,7 +169,13 @@ export abstract class DataBaseRepository<TRawDocType, TMethods = {}> {
 
     return await this.model.findOneAndUpdate(
       filter,
-      { ...update, $inc: { __v: 1 } },
+      {
+        ...update,
+        $inc: {
+          ...(update.$inc ?? {}),
+          __v: 1,
+        },
+      },
       {
         ...options,
         returnDocument: "after",
@@ -389,6 +397,17 @@ export abstract class DataBaseRepository<TRawDocType, TMethods = {}> {
         hasPreviousPage: page > 1,
       },
     };
+  }
+
+  //aggregate
+  async aggregate<R = TRawDocType>({
+    pipeline = [],
+    options,
+  }: {
+    pipeline?: Array<PipelineStage>;
+    options?: AggregateOptions;
+  }): Promise<Array<R>> {
+    return this.model.aggregate(pipeline, options);
   }
 
   //updateOne

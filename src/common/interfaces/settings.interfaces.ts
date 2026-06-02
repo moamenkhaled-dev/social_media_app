@@ -3,6 +3,7 @@ import type {
   LanguageEnum,
   ProfileVisibilityEnum,
 } from "../enums/profile.enums.js";
+import type { ShowFollowEnum } from "../enums/settings.enums.js";
 
 export interface IPrivacy {
   profileVisibility?: ProfileVisibilityEnum;
@@ -15,6 +16,8 @@ export interface IPrivacy {
   showJoinedAt?: boolean;
   showEducation?: boolean;
   showRelation?: boolean;
+  showFollowersList?: ShowFollowEnum;
+  showFollowingsList?: ShowFollowEnum;
 }
 
 export interface ISettings {

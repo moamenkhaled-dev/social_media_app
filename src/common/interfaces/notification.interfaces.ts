@@ -26,6 +26,7 @@ export interface INotification {
   pushStatus?: PushStatusEnum | undefined;
   pushSentAt?: Date | undefined;
   createdByAdmin?: Types.ObjectId | undefined;
+  notificationKey?: string;
   deletedAt?: Date | undefined;
   createdAt?: Date | undefined;
 }

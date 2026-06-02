@@ -2,5 +2,6 @@
 export enum FollowStatusEnum {
   REQUESTED = "Requested",
   ACCEPTED = "Accepted",
-  REJECTED = "Rejected",
+  // REJECTED = "Rejected",
+  // DELETED = "Deleted",
 }

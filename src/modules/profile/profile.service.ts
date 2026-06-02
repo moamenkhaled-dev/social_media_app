@@ -19,12 +19,6 @@ import type { IStats } from "../../common/interfaces/stats.interfaces.js";
 import type { ISettings } from "../../common/interfaces/settings.interfaces.js";
 import type { IUser } from "../../common/interfaces/user.interfaces.js";
 
-// ─── Response Types ──────────────────────────────────────────────────────────
-
-/**
- * Returned by profile() — the authenticated user viewing their own profile.
- * Always has the full profile document plus credentials.
- */
 export type OwnerProfileResponse = {
   profile: HydratedDocument<IProfile>;
   stats: HydratedDocument<IStats>;

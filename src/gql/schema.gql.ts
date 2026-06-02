@@ -6,6 +6,7 @@ import { profileGraphQLSchema } from "../modules/profile/gql/profile.schema.gql.
 import { postGraphQLSchema } from "../modules/post/gql/post.schema.gql.js";
 import { commentGraphQLSchema } from "../modules/comment/index.js";
 import { chatGraphQLSchema } from "../modules/chat/gql/chat.schema.gql.js";
+import { followGraphQLSchema } from "../modules/follow/gql/follow.schema.gql.js";
 
 const query = new GraphQLObjectType({
   name: "query",
@@ -17,6 +18,7 @@ const query = new GraphQLObjectType({
     ...userGraphQLSchema.registerQuery(),
     ...postGraphQLSchema.registerQuery(),
     ...chatGraphQLSchema.registerQuery(),
+    ...followGraphQLSchema.registerQuery(),
   },
 });
 
@@ -27,6 +29,7 @@ const mutation = new GraphQLObjectType({
     ...authGraphQlSchema.registerMutation(),
     ...userGraphQLSchema.registerMutation(),
     ...profileGraphQLSchema.registerMutation(),
+    ...followGraphQLSchema.registerMutation(),
   },
 });
 

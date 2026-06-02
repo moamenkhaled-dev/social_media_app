@@ -57,11 +57,7 @@ export const GQLAuthentication = async ({
   if (!authorization) {
     throw new UnauthorizedError("No authorization header");
   }
-  console.log(authorization);
-
   const [flag, token] = authorization.split(" ");
-  console.log({ flag, token });
-
   if (!token?.trim().length) {
     throw new UnauthorizedError("No token passed");
   }

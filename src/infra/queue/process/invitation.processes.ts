@@ -11,7 +11,6 @@ class InvitationProcess {
   private readonly messageRepository: MessageRepository;
   private readonly redis = redisService;
 
-  // ✅ lazy getter — avoids circular import issue
   private get realtime() {
     return realtimeGateWay;
   }

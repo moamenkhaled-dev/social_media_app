@@ -183,6 +183,42 @@ class RedisService {
   }): string {
     return `Chat::Messages::${chatId}::${cursor ?? "latest"}::${limit}::v${version}`;
   }
+  followersVersionKey(userId: Types.ObjectId | string): string {
+    return `Followers::User::${userId}::version`;
+  }
+  followersKey({
+    userId,
+    page = PaginateDefault.PAGE,
+    limit = PaginateDefault.LIMIT,
+    search = PaginateDefault.SEARCH,
+    version,
+  }: {
+    userId: Types.ObjectId | string;
+    page?: number | undefined;
+    limit?: number | undefined;
+    search?: string | undefined;
+    version: number;
+  }): string {
+    return `Followers::User::${userId}::${page}::${limit}::${search}::v${version}`;
+  }
+  followingsVersionKey(userId: Types.ObjectId | string): string {
+    return `Followings::User::${userId}::version`;
+  }
+  followingsKey({
+    userId,
+    page = PaginateDefault.PAGE,
+    limit = PaginateDefault.LIMIT,
+    search = PaginateDefault.SEARCH,
+    version,
+  }: {
+    userId: Types.ObjectId | string;
+    page?: number | undefined;
+    limit?: number | undefined;
+    search?: string | undefined;
+    version: number;
+  }): string {
+    return `Followings::User::${userId}::${page}::${limit}::${search}::v${version}`;
+  }
 
   //Core Operations
   async set({
@@ -484,6 +520,18 @@ class RedisService {
 
     return previous ? Number(previous) : 1;
   }
+  async getFollowersVersion(userId: Types.ObjectId | string): Promise<number> {
+    const key = this.followersVersionKey(userId);
+    const previous = this.client.set(key, "1", { condition: "NX", GET: true });
+
+    return previous ? Number(previous) : 1;
+  }
+  async getFollowingsVersion(userId: Types.ObjectId | string): Promise<number> {
+    const key = this.followingsVersionKey(userId);
+    const previous = this.client.set(key, "1", { condition: "NX", GET: true });
+
+    return previous ? Number(previous) : 1;
+  }
   async incrementUserVersion(id: Types.ObjectId | string): Promise<number> {
     const key = this.userVersionKey(id);
 
@@ -512,6 +560,23 @@ class RedisService {
     const key = this.messageVersionKey(chatId);
 
     return await this.incr(key);
+  }
+  async incrementFollowersVersion(
+    userId: Types.ObjectId | string,
+  ): Promise<number> {
+    const key = this.followersVersionKey(userId);
+
+    return await this.incr(key);
+  }
+  async incrementFollowingVersion(
+    userId: Types.ObjectId | string,
+  ): Promise<number> {
+    const key = this.followingsVersionKey(userId);
+
+    return await this.incr(key);
+  }
+  async getSockets(userId: Types.ObjectId | string): Promise<Array<string>> {
+    return await this.sMembers(this.socketKey(userId));
   }
 }
 

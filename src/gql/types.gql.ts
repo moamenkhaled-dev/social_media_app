@@ -182,6 +182,23 @@ class GraphQLTypes {
       updatedAt: { type: GraphQLString },
     }),
   });
+
+  //follow user
+  oneFollowersListType = new GraphQLObjectType({
+    name: "oneFollowersListType",
+    fields: () => ({
+      followerId: { type: GraphQLID },
+      follower: {
+        type: new GraphQLObjectType({
+          name: "followerType",
+          fields: {
+            username: { type: GraphQLString },
+            avatarUrl: { type: GraphQLString },
+          },
+        }),
+      },
+    }),
+  });
 }
 
 export const graphQLTypes = new GraphQLTypes();

@@ -38,11 +38,11 @@ const notificationSchema = new Schema<INotification>(
       enum: NotificationTargetTypeEnum,
       required: true,
     },
-    notificationTargetId: {
-      type: Types.ObjectId,
-      refPath: "notificationTargetType",
-      required: true,
-    },
+    // notificationTargetId: {
+    //   type: Types.ObjectId,
+    //   refPath: "notificationTargetType",
+    //   required: true,
+    // },
     title: {
       type: String,
       required: true,
@@ -65,6 +65,7 @@ const notificationSchema = new Schema<INotification>(
       default: new Date(),
     },
     createdByAdmin: { type: Types.ObjectId, ref: "User" },
+    notificationKey: { type: String },
     deletedAt: Date,
   },
   {
@@ -76,6 +77,9 @@ const notificationSchema = new Schema<INotification>(
     toObject: { virtuals: true },
   },
 );
+
+//indexes
+// notificationSchema.index({ notificationKey: 1 }, { unique: true });
 
 export const Notification = model<INotification>(
   "Notification",
