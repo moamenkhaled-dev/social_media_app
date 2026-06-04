@@ -1,6 +1,7 @@
 import { GraphQLEnumType } from "graphql";
 import {
   GenderEnum,
+  LanguageEnum,
   ProfileVisibilityEnum,
   RelationEnum,
 } from "./profile.enums.js";
@@ -8,6 +9,7 @@ import { PostStatusEnum, PostVisibilityEnum } from "./post.enums.js";
 import { LogoutFlagEnum } from "./security.enums.js";
 import { ChatTypeEnum } from "./chat.enums.js";
 import { MessageTypeEnum } from "./message.enums.js";
+import { ShowFollowEnum } from "./settings.enums.js";
 
 //gender
 export const GQLGenderEnum = new GraphQLEnumType({
@@ -83,5 +85,22 @@ export const GraphQLMessageTypeEnum = new GraphQLEnumType({
     File: { value: MessageTypeEnum.FILE },
     Mixed: { value: MessageTypeEnum.MIXED },
     System: { value: MessageTypeEnum.SYSTEM },
+  },
+});
+
+export const GraphQLShowFollowEnum = new GraphQLEnumType({
+  name: "GraphQLShowFollowEnum",
+  values: {
+    Only_Me: { value: ShowFollowEnum.ONLY_ME },
+    Followers: { value: ShowFollowEnum.FOLLOWERS },
+    Anyone: { value: ShowFollowEnum.ANYONE },
+  },
+});
+
+export const GraphQLLanguageEnum = new GraphQLEnumType({
+  name: "GraphQLLanguageEnum",
+  values: {
+    Arabic: { value: LanguageEnum.ARABIC },
+    English: { value: LanguageEnum.ENGLISH },
   },
 });

@@ -33,10 +33,20 @@ import {
 } from "../../infra/repository/index.js";
 import { realtimeGateWay } from "../realtime/realtime.gateway.js";
 import type { IFollow } from "../../common/interfaces/follow.interface.js";
-import type { FollowersListDto, FollowUserDto } from "./follow.js";
+import type {
+  FollowersListDto,
+  FollowingListDto,
+  FollowRequestsListDto,
+  FollowUserDto,
+} from "./follow.js";
 import { CacheTTL } from "../../common/constants/cache.constants.js";
 import { ShowFollowEnum } from "../../common/enums/settings.enums.js";
-import type { IFollowersListResponse } from "./follow.entity.js";
+import type {
+  IFollowersListResponse,
+  IFollowingListResponse,
+  IFollowRequestsListResponse,
+} from "./follow.entity.js";
+import { PaginateDefault } from "../../common/constants/paginate.constants.js";
 
 class FollowService {
   private readonly userRepository: UserRepository;
@@ -166,6 +176,7 @@ class FollowService {
     await Promise.all([
       this.redis.incrementFollowingVersion(user._id),
       this.redis.incrementFollowersVersion(targetUserId),
+      this.redis.incrementStatsVersion(user._id),
     ]);
     if (settings.allowNotifications) {
       try {
@@ -264,8 +275,9 @@ class FollowService {
       .to(await this.redis.getSockets(user._id))
       .emit("unFollow_user", { actorId: user._id, targetUserId });
     await Promise.all([
-      this.redis.incrementFollowingVersion(user._id),
       this.redis.incrementFollowersVersion(targetUserId),
+      this.redis.incrementFollowingVersion(user._id),
+      this.redis.incrementStatsVersion(user._id),
     ]);
 
     return;
@@ -274,14 +286,16 @@ class FollowService {
   //cancel follow request
   async rejectFollowRequest(inputs: FollowUserDto): Promise<void> {
     const { user, targetUserId } = inputs;
-    const [profile, settings] = await Promise.all([
+    const [targetUser, profile, settings] = await Promise.all([
+      //targetUser
+      this.userRepository.findOne({ filter: { _id: targetUserId } }),
       //profile
       this.profileRepository.findOne({ filter: { ownerId: user._id } }),
       //settings
       this.settingsRepository.findOne({ filter: { ownerId: targetUserId } }),
     ]);
-    if (!profile) {
-      throw new NotFoundError(`Profile not found`);
+    if (!profile || !targetUser) {
+      throw new NotFoundError(`Profile not found or user not found`);
     }
     if (!settings) {
       throw new NotFoundError(`settings not found`);
@@ -342,6 +356,7 @@ class FollowService {
         //TODO : logger here
       }
     }
+    await this.redis.incrementFollowRequestsVersion(user._id);
 
     return;
   }
@@ -349,14 +364,16 @@ class FollowService {
   //accept follow request
   async acceptFollowRequest(inputs: FollowUserDto): Promise<void> {
     const { user, targetUserId } = inputs;
-    const [userProfile, targetSettings] = await Promise.all([
+    const [targetUser, userProfile, targetSettings] = await Promise.all([
+      //targetUser
+      this.userRepository.findOne({ filter: { _id: targetUserId } }),
       //userProfile
       this.profileRepository.findOne({ filter: { ownerId: user._id } }),
       //target settings
       this.settingsRepository.findOne({ filter: { ownerId: targetUserId } }),
     ]);
-    if (!userProfile) {
-      throw new NotFoundError(`profile not found`);
+    if (!userProfile || targetUser) {
+      throw new NotFoundError(`profile not found or user not found`);
     }
     if (!targetSettings) {
       throw new NotFoundError(
@@ -373,9 +390,12 @@ class FollowService {
           followerId: targetUserId,
           requested: true,
         },
-        update: { followStatus: FollowStatusEnum.ACCEPTED },
+        update: { $set: { followStatus: FollowStatusEnum.ACCEPTED } },
         options: { session },
       });
+      if (!follow) {
+        throw new NotFoundError(`Follow request not found`);
+      }
       //user stats
       await this.statsRepository.findOneAndUpdate({
         filter: { ownerId: user._id },
@@ -405,6 +425,8 @@ class FollowService {
     await Promise.all([
       this.redis.incrementFollowingVersion(targetUserId),
       this.redis.incrementFollowersVersion(user._id),
+      this.redis.incrementStatsVersion(user._id),
+      this.redis.incrementStatsVersion(targetUserId),
     ]);
     if (targetSettings.allowNotifications === true) {
       try {
@@ -446,15 +468,17 @@ class FollowService {
       } catch (error) {
         //TODO : logger here
       }
+      await this.redis.incrementFollowRequestsVersion(user._id);
 
       return;
     }
   }
 
-  private readonly followers = async ({
+  //followers list
+  private readonly getFollowers = async ({
     userId,
-    page,
-    limit,
+    page = PaginateDefault.PAGE,
+    limit = PaginateDefault.LIMIT,
     search,
   }: {
     userId: Types.ObjectId | string;
@@ -463,26 +487,52 @@ class FollowService {
     search?: string;
   }): Promise<Array<IFollowersListResponse>> => {
     const pipeline: Array<PipelineStage> = [
-      { $match: { followingId: userId } },
       {
-        $lookup: {
-          from: "profiles",
-          localField: "followerId",
-          foreignField: "ownerId",
-          as: "follower",
+        $match: {
+          followingId: userId,
+          followStatus: FollowStatusEnum.ACCEPTED,
         },
       },
-      { $unwind: "$follower" },
     ];
     if (search?.trim()) {
-      pipeline.push({
-        $match: { "follower.username": { $regex: search, $options: "i" } },
-      });
+      pipeline.push(
+        {
+          $lookup: {
+            from: "profiles",
+            localField: "followerId",
+            foreignField: "ownerId",
+            as: "follower",
+          },
+        },
+        { $unwind: "$follower" },
+        {
+          $match: {
+            "follower.username": {
+              $regex: search,
+              $options: "i",
+            },
+          },
+        },
+        { $sort: { createdAt: -1 } },
+        { $skip: ((page as number) - 1) * (limit as number) },
+        { $limit: limit as number },
+      );
+    } else {
+      pipeline.push(
+        { $skip: ((page as number) - 1) * (limit as number) },
+        { $limit: limit as number },
+        { $sort: { createdAt: -1 } },
+        {
+          $lookup: {
+            from: "profiles",
+            localField: "followerId",
+            foreignField: "ownerId",
+            as: "follower",
+          },
+        },
+        { $unwind: "$follower" },
+      );
     }
-    pipeline.push(
-      { $skip: ((page as number) - 1) * (limit as number) },
-      { $limit: limit as number },
-    );
     const version = await this.redis.getFollowersVersion(userId);
     const key = this.redis.followersKey({
       userId: userId,
@@ -513,7 +563,7 @@ class FollowService {
     const { user, targetUserId, page, limit, search } = inputs;
     const isOwner = user._id.equals(targetUserId);
     if (isOwner) {
-      const followers = await this.followers({
+      const followers = await this.getFollowers({
         userId: targetUserId,
         page: page as number,
         limit: limit as number,
@@ -556,7 +606,7 @@ class FollowService {
     }
     if (isFollower) {
       if (targetSettings.privacy.showFollowersList !== ShowFollowEnum.ONLY_ME) {
-        const followers = await this.followers({
+        const followers = await this.getFollowers({
           userId: targetUserId,
           page: page as number,
           limit: limit as number,
@@ -565,6 +615,7 @@ class FollowService {
 
         return followers;
       }
+      throw new ForbiddenError(`You can't see the followers list of this user`);
     }
     if (
       targetProfile.visibility === ProfileVisibilityEnum.PRIVATE ||
@@ -572,7 +623,7 @@ class FollowService {
     ) {
       throw new ForbiddenError(`You can't see the followers list of this user`);
     }
-    const followers = await this.followers({
+    const followers = await this.getFollowers({
       userId: targetUserId,
       page: page as number,
       limit: limit as number,
@@ -582,13 +633,251 @@ class FollowService {
     return followers;
   }
 
-  //TODO : following list
+  //following list
+  private readonly getFollowingList = async ({
+    userId,
+    page = PaginateDefault.PAGE,
+    limit = PaginateDefault.LIMIT,
+    search,
+  }: {
+    userId: Types.ObjectId | string;
+    page?: number;
+    limit?: number;
+    search?: string;
+  }): Promise<Array<IFollowingListResponse>> => {
+    const pipeline: Array<PipelineStage> = [
+      {
+        $match: {
+          followerId: userId,
+          followStatus: FollowStatusEnum.ACCEPTED,
+        },
+      },
+    ];
+    if (search?.trim()) {
+      pipeline.push(
+        {
+          $lookup: {
+            from: "profiles",
+            localField: "followingId",
+            foreignField: "ownerId",
+            as: "following",
+          },
+        },
+        { $unwind: "$following" },
+        {
+          $match: { "following.username": { $regex: search, $options: "i" } },
+        },
+        { $sort: { createdAt: -1 } },
+        { $skip: (page - 1) * limit },
+        { $limit: limit },
+      );
+    } else {
+      pipeline.push(
+        { $sort: { createdAt: -1 } },
+        { $skip: (page - 1) * limit },
+        { $limit: limit },
+        {
+          $lookup: {
+            from: "profiles",
+            localField: "followingId",
+            foreignField: "ownerId",
+            as: "following",
+          },
+        },
+        { $unwind: "$following" },
+      );
+    }
+    const version = await this.redis.getFollowingsVersion(userId);
+    const key = this.redis.followingsKey({
+      userId,
+      page,
+      limit,
+      search,
+      version,
+    });
+    const followingList = await this.redis.cache<Array<IFollowingListResponse>>(
+      {
+        key,
+        ttl: CacheTTL.FOLLOWINGS_LIST,
+        fn: () =>
+          this.followRepository.aggregate<IFollowingListResponse>({
+            pipeline,
+          }),
+      },
+    );
+    if (!followingList?.length) {
+      return [];
+    }
 
-  //TODO : follow requests list
+    return followingList;
+  };
 
-  //TODO : followers list of another user
+  //following list
+  async followingList(
+    inputs: FollowingListDto,
+  ): Promise<Array<IFollowingListResponse>> {
+    const { user, targetUserId, page, limit, search } = inputs;
+    const isOwner = user._id.equals(targetUserId);
+    if (isOwner) {
+      const followingList = await this.getFollowingList({
+        userId: targetUserId,
+        page: page as number,
+        limit: limit as number,
+        search: search as string,
+      });
 
-  //TODO : following list of another user
+      return followingList;
+    }
+    const [targetUser, targetSettings, targetProfile, isFollower, isBlock] =
+      await Promise.all([
+        //targetUser
+        this.userRepository.findOne({ filter: { _id: targetUserId } }),
+        //targetSettings
+        this.settingsRepository.findOne({ filter: { ownerId: targetUserId } }),
+        //targetProfile
+        this.profileRepository.findOne({ filter: { ownerId: targetUserId } }),
+        //isFollower
+        this.followRepository.findOne({
+          filter: { followerId: user._id, followingId: targetUserId },
+        }),
+        //isBlock
+        this.blockRepository.findOne({
+          filter: {
+            $or: [
+              { blockerId: user._id, blockedId: targetUserId },
+              { blockerId: targetUserId, blockedId: user._id },
+            ],
+          },
+        }),
+      ]);
+    if (isBlock) {
+      throw new NotFoundError(`User not found`);
+    }
+    if (!targetUser || !targetSettings || !targetProfile) {
+      throw new NotFoundError(`Something went wrong may be user not found`);
+    }
+    if (isFollower) {
+      if (
+        targetSettings.privacy.showFollowingsList !== ShowFollowEnum.ONLY_ME
+      ) {
+        const followingList = await this.getFollowingList({
+          userId: targetUserId,
+          page: page as number,
+          limit: limit as number,
+          search: search as string,
+        });
+
+        return followingList;
+      }
+      throw new ForbiddenError(`You can't see the following list of this user`);
+    }
+    const isPrivate =
+      targetProfile.visibility === ProfileVisibilityEnum.PRIVATE;
+    if (isPrivate) {
+      throw new ForbiddenError(`You can't see the following list of this user`);
+    }
+    if (targetSettings.privacy.showFollowingsList !== ShowFollowEnum.ANYONE) {
+      throw new ForbiddenError(`You can't see the following list of this user`);
+    }
+    const followingList = await this.getFollowingList({
+      userId: targetUserId,
+      page: page as number,
+      limit: limit as number,
+      search: search as string,
+    });
+
+    return followingList;
+  }
+
+  //requests list
+  private readonly getFollowRequestsList = async ({
+    userId,
+    page = PaginateDefault.PAGE,
+    limit = PaginateDefault.LIMIT,
+    search,
+  }: {
+    userId: Types.ObjectId | string;
+    page?: number;
+    limit?: number;
+    search?: string;
+  }): Promise<Array<IFollowRequestsListResponse>> => {
+    const pipeline: Array<PipelineStage> = [
+      {
+        $match: {
+          followingId: userId,
+          followStatus: FollowStatusEnum.REQUESTED,
+        },
+      },
+    ];
+    if (search?.trim()) {
+      pipeline.push(
+        {
+          $lookup: {
+            from: "profiles",
+            localField: "followerId",
+            foreignField: "ownerId",
+            as: "requester",
+          },
+        },
+        { $unwind: "$requester" },
+        { $match: { "requester.username": { $regex: search, $options: "i" } } },
+        { $sort: { createdAt: -1 } },
+        { $skip: (page - 1) * limit },
+        { $limit: limit },
+      );
+    } else {
+      pipeline.push(
+        { $sort: { createdAt: -1 } },
+        { $skip: (page - 1) * limit },
+        { $limit: limit },
+        {
+          $lookup: {
+            from: "profiles",
+            localField: "followerId",
+            foreignField: "ownerId",
+            as: "requester",
+          },
+        },
+        { $unwind: "$requester" },
+      );
+    }
+    const version = await this.redis.getFollowRequestsVersion(userId);
+    const key = this.redis.followRequestsKey({
+      userId,
+      page,
+      limit,
+      search: search as string,
+      version,
+    });
+    const followRequestsList = await this.redis.cache({
+      key,
+      ttl: CacheTTL.FOLLOW_REQUESTS_LIST,
+      fn: () =>
+        this.followRepository.aggregate<IFollowRequestsListResponse>({
+          pipeline,
+        }),
+    });
+    if (!followRequestsList?.length) {
+      return [];
+    }
+
+    return followRequestsList;
+  };
+
+  //follow requests list
+  async followRequestsList(
+    inputs: FollowRequestsListDto,
+  ): Promise<Array<IFollowRequestsListResponse>> {
+    const { user, page, limit, search } = inputs;
+    const requestsList = await this.getFollowRequestsList({
+      userId: user._id,
+      page: page as number,
+      limit: limit as number,
+      search: search as string,
+    });
+
+    return requestsList;
+  }
 }
 
 export const followService = new FollowService();

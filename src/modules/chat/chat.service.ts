@@ -204,7 +204,7 @@ class ChatService {
       fn: () =>
         this.messageRepository.find({
           filter,
-          options: { sort: "-1", limit: limit + 1 },
+          options: { sort: { createdAt: -1 }, limit: limit + 1 },
         }),
     });
     if (!messages) {

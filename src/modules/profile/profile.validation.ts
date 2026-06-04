@@ -6,6 +6,9 @@ class ProfileValidationSchema {
   getProfileById = z.strictObject({
     targetId: generalValidationFields.id,
   });
+
+  //get stats
+  getStats = z.strictObject({}).extend(this.getProfileById.shape);
 }
 
 export const profileValidationSchema = new ProfileValidationSchema();

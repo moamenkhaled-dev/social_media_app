@@ -10,3 +10,5 @@ export type GetProfileByIdDto = z.infer<
 export type GraphQLGetProfileByIdDto = z.infer<
   typeof profileValidationSchema.getProfileById
 >;
+
+export type GetStatsDto = z.infer<typeof profileValidationSchema.getStats>;

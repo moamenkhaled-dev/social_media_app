@@ -40,6 +40,15 @@ class ProfileGraphQLType {
       },
     },
   });
+
+  //get stats
+  getStats = new GraphQLObjectType({
+    name: "getStatsType",
+    fields: {
+      message: { type: this.graphQLTypes.messageType },
+      data: { type: this.graphQLTypes.oneStatsType },
+    },
+  });
 }
 
 export const profileGraphQLType = new ProfileGraphQLType();

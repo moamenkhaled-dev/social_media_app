@@ -8,4 +8,6 @@ export enum JobEnum {
   UPLOAD_COMMENT_MEDIA = "Upload_Comment_Media",
   UPDATE_COMMENT_MEDIA = "Update_Comment_Media",
   CREATE_INVITATION_MESSAGES = "Create_Invitation_Messages",
+  BLOCK = "Block",
+  FOLLOW = "Follow",
 }

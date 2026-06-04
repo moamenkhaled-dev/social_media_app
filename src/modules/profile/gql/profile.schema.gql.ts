@@ -24,6 +24,14 @@ class ProfileGraphQLSchema {
         args: this.profileArgs.getProfileById,
         resolve: this.profileResolver.getProfileById,
       },
+
+      //get stats
+      getStats: {
+        description: "Get stats of current user",
+        type: this.profileType.getStats,
+        args: this.profileArgs.getProfileById,
+        resolve: this.profileResolver.getStats,
+      },
     };
   }
 

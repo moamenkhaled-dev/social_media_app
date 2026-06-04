@@ -14,7 +14,9 @@ import {
   GQLProfileVisibilityEnum,
   GQLRelationEnum,
   GraphQLChatTypeEnum,
+  GraphQLLanguageEnum,
   GraphQLMessageTypeEnum,
+  GraphQLShowFollowEnum,
 } from "../common/enums/gql.enums.js";
 
 class GraphQLTypes {
@@ -183,7 +185,7 @@ class GraphQLTypes {
     }),
   });
 
-  //follow user
+  //followers list
   oneFollowersListType = new GraphQLObjectType({
     name: "oneFollowersListType",
     fields: () => ({
@@ -198,6 +200,73 @@ class GraphQLTypes {
         }),
       },
     }),
+  });
+
+  //following list
+  oneFollowingListType = new GraphQLObjectType({
+    name: "oneFollowingListType",
+    fields: () => ({
+      followingId: { type: GraphQLID },
+      following: {
+        type: new GraphQLObjectType({
+          name: "followingType",
+          fields: {
+            username: { type: GraphQLString },
+            avatarUrl: { type: GraphQLString },
+          },
+        }),
+      },
+    }),
+  });
+
+  //follow requests list
+  oneFollowRequestsListType = new GraphQLObjectType({
+    name: "oneFollowRequestsListType",
+    fields: () => ({
+      requesterId: { type: GraphQLID },
+      requester: {
+        type: new GraphQLObjectType({
+          name: "requesterType",
+          fields: {
+            username: { type: GraphQLString },
+            avatarUrl: { type: GraphQLString },
+          },
+        }),
+      },
+    }),
+  });
+
+  //privacy type
+  privacyType = new GraphQLObjectType({
+    name: "oneSettingsPrivacyType",
+    fields: () => ({
+      profileVisibility: { type: GQLProfileVisibilityEnum },
+      showOnLineStatus: { type: GraphQLBoolean },
+      showLastSeen: { type: GraphQLBoolean },
+      showEmail: { type: GraphQLBoolean },
+      showPhone: { type: GraphQLBoolean },
+      showLocation: { type: GraphQLBoolean },
+      showDOB: { type: GraphQLBoolean },
+      showJoinedAt: { type: GraphQLBoolean },
+      showEducation: { type: GraphQLBoolean },
+      showRelation: { type: GraphQLBoolean },
+      showFollowersList: { type: GraphQLShowFollowEnum },
+      showFollowingsList: { type: GraphQLShowFollowEnum },
+    }),
+  });
+  //one settings type
+  oneSettingsType = new GraphQLObjectType({
+    name: "oneSettingsType",
+    fields: {
+      _id: { type: new GraphQLNonNull(GraphQLID) },
+      ownerId: { type: new GraphQLNonNull(GraphQLID) },
+      privacy: { type: this.privacyType },
+      language: { type: GraphQLLanguageEnum },
+      showInSearch: { type: GraphQLBoolean },
+      showInRecommendations: { type: GraphQLBoolean },
+      allowNotifications: { type: GraphQLBoolean },
+      allowGroupAdding: { type: GraphQLBoolean },
+    },
   });
 }
 

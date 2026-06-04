@@ -345,6 +345,7 @@ class CommentService {
           page: page as number,
           limit: limit as number,
           options: {
+            sort: { createdAt: -1 },
             populate: [
               {
                 path: `authorId`,

@@ -1,15 +1,22 @@
-import { GraphQLID, GraphQLInt, GraphQLNonNull } from "graphql";
+import { GraphQLID, GraphQLInt, GraphQLNonNull, GraphQLString } from "graphql";
 
 class FollowGraphQLArgs {
   //follow user
   follow = { targetUserId: { type: new GraphQLNonNull(GraphQLID) } };
 
   //followers list
-  followersList = {
+  followList = {
     targetUserId: { type: new GraphQLNonNull(GraphQLID) },
     page: { type: GraphQLInt },
     limit: { type: GraphQLInt },
-    search: { type: GraphQLInt },
+    search: { type: GraphQLString },
+  };
+
+  //follow requests list
+  followRequestsList = {
+    page: { type: GraphQLInt },
+    limit: { type: GraphQLInt },
+    search: { type: GraphQLString },
   };
 }
 

@@ -10,6 +10,9 @@ class FollowValidation {
   followersList = z
     .strictObject({ targetUserId: generalValidationFields.id })
     .extend(PaginateValidation.shape);
+
+  //follow requests list
+  followRequestsList = z.strictObject({}).extend(PaginateValidation.shape);
 }
 
 export const followValidation = new FollowValidation();

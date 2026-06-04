@@ -6,3 +6,8 @@ export interface IBlock {
   createdAt?: Date;
   updatedAt?: Date;
 }
+
+export interface IBlockSocialProcessData {
+  blockerId: Types.ObjectId | string;
+  blockedId: Types.ObjectId | string;
+}

@@ -11,11 +11,28 @@ class FollowGraphQLSchema {
   //query
   registerQuery() {
     return {
-      //dummy
-      dummyFollow: {
-        description: "Dummy query for testing",
-        type: GraphQLString,
-        resolve: () => "Follow module is working 🚀",
+      //followers list
+      followersList: {
+        description: "accept follow request",
+        type: this.followGraphQLType.followersList,
+        args: this.followGraphQLArgs.followList,
+        resolve: this.followResolver.followersList,
+      },
+
+      //following list
+      followingList: {
+        description: `following list of target user`,
+        type: this.followGraphQLType.followingList,
+        args: this.followGraphQLArgs.followList,
+        resolve: this.followResolver.followingList,
+      },
+
+      //follow requests list
+      followRequestsList: {
+        description: `follow requests list of current user`,
+        type: this.followGraphQLType.followRequestsList,
+        args: this.followGraphQLArgs.followRequestsList,
+        resolve: this.followResolver.followRequestsList,
       },
     };
   }
@@ -53,14 +70,6 @@ class FollowGraphQLSchema {
         type: this.followGraphQLType.followRequest,
         args: this.followGraphQLArgs.follow,
         resolve: this.followResolver.acceptFollowRequest,
-      },
-
-      //followers list
-      followersList: {
-        description: "accept follow request",
-        type: this.followGraphQLType.followersList,
-        args: this.followGraphQLArgs.followersList,
-        resolve: this.followResolver.followersList,
       },
     };
   }

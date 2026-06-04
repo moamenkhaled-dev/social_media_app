@@ -1,5 +1,5 @@
 import type { IAuth } from "../auth/auth.js";
-import type { GetProfileByIdDto } from "./profile.js";
+import type { GetProfileByIdDto, GetStatsDto } from "./profile.js";
 import {
   BlockRepository,
   FollowRepository,
@@ -170,8 +170,8 @@ class ProfileService {
         },
       }),
       this.redis.cache<HydratedDocument<ISettings> | null>({
-        key: this.redis.userSettingsKey({
-          id: targetUser._id,
+        key: this.redis.settingsKey({
+          userId: targetUser._id,
           version: settingsVersion,
         }),
         ttl: CacheTTL.SETTINGS,
@@ -233,6 +233,35 @@ class ProfileService {
       response.lastSeenAt = targetUser.lastSeenAt ?? undefined;
 
     return response;
+  }
+
+  //get stats
+  async getStats(inputs: GetStatsDto): Promise<IStats> {
+    const { targetId } = inputs;
+    const targetUser = await this.userRepository.findOne({
+      filter: { _id: targetId },
+    });
+    if (!targetUser) {
+      throw new NotFoundError("User not found");
+    }
+    const version = await this.redis.getStatsVersion(targetId);
+    const key = this.redis.userStatsKey({
+      id: targetId,
+      version,
+    });
+    const stats = await this.redis.cache({
+      key,
+      ttl: CacheTTL.STATS,
+      fn: () =>
+        this.statsRepository.findOne({
+          filter: { ownerId: targetId },
+        }),
+    });
+    if (!stats) {
+      throw new NotFoundError("Stats not found");
+    }
+
+    return stats;
   }
 }
 
