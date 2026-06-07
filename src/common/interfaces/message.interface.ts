@@ -10,6 +10,7 @@ export interface IMessage {
   attachments?: Array<string>;
   replyToMessageId?: Types.ObjectId | null;
   isEdited?: boolean;
+  reportsCount?: number;
   deletedAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;

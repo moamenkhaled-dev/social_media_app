@@ -261,6 +261,56 @@ class RedisService {
   userStatsKey({ id, version }: CacheUserPayLoadType): string {
     return `${this.userBaseKey({ id, version })}::Stats`;
   }
+  reportVersionKey(reportId: Types.ObjectId | string): string {
+    return `Report::${reportId}::version`;
+  }
+  reportKey({
+    reportId,
+    version,
+  }: {
+    reportId: Types.ObjectId | string;
+    version: number;
+  }): string {
+    return `Report::${reportId}::v${version}`;
+  }
+  reportList({
+    page,
+    limit,
+    search,
+    version,
+  }: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    version: number;
+  }): string {
+    return `Report::${page}::${limit}::${search}::v${version}`;
+  }
+  moderationCaseVersionKey(moderationCaseId: Types.ObjectId | string): string {
+    return `ModerationCase::${moderationCaseId}::version`;
+  }
+  moderationCaseKey({
+    moderationCaseId,
+    version,
+  }: {
+    moderationCaseId: Types.ObjectId | string;
+    version: number;
+  }): string {
+    return `ModerationCase::${moderationCaseId}::v${version}`;
+  }
+  moderationCaseList({
+    page,
+    limit,
+    search,
+    version,
+  }: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    version: number;
+  }): string {
+    return `ModerationCase::${page}::${limit}::${search}::v${version}`;
+  }
 
   //Core Operations
   async set({
@@ -686,6 +736,50 @@ class RedisService {
     userId: Types.ObjectId | string,
   ): Promise<number> {
     const key = this.userStatsVersionKey(userId);
+
+    return await this.incr(key);
+  }
+  async getReportVersion({
+    reportId = "List",
+  }: {
+    reportId?: Types.ObjectId | string;
+  }): Promise<number> {
+    const key = this.reportVersionKey(reportId);
+    const previous = await this.client.set(key, "1", {
+      condition: "NX",
+      GET: true,
+    });
+
+    return previous ? Number(previous) : 1;
+  }
+  async incrementReportVersion({
+    reportId = "List",
+  }: {
+    reportId?: Types.ObjectId | string;
+  }): Promise<number> {
+    const key = this.reportVersionKey(reportId);
+
+    return await this.incr(key);
+  }
+  async getModerationCaseVersion({
+    moderationCaseId = "List",
+  }: {
+    moderationCaseId?: Types.ObjectId | string;
+  }): Promise<number> {
+    const key = this.moderationCaseVersionKey(moderationCaseId);
+    const previous = await this.client.set(key, "1", {
+      condition: "NX",
+      GET: true,
+    });
+
+    return previous ? Number(previous) : 1;
+  }
+  async incrementModerationCaseVersion({
+    moderationCaseId = "List",
+  }: {
+    moderationCaseId?: Types.ObjectId | string;
+  }): Promise<number> {
+    const key = this.moderationCaseVersionKey(moderationCaseId);
 
     return await this.incr(key);
   }

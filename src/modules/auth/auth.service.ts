@@ -379,20 +379,22 @@ class AuthService {
       body: `there is new login from ${platform()}`,
       pushStatus: PushStatusEnum.PENDING,
     });
-    const key = this.redis.FCMKey(user._id);
-    await this.redis.sAdd({ key, members: FCM });
-    await notificationQueue.add(JobEnum.SEND_MULTIPLE_NOTIFICATIONS, {
-      userIds: [user._id],
-      title: "new login",
-      body: JSON.stringify({
-        message: `there is new login from ${platform()}`,
-        notificationId: notificationDB._id.toString(),
-        userId: user._id,
-      }),
-      notificationId: notificationDB._id,
-    });
-    user.lastLoginAt = new Date();
-    user.save();
+    if (FCM) {
+      const key = this.redis.FCMKey(user._id);
+      await this.redis.sAdd({ key, members: FCM });
+      await notificationQueue.add(JobEnum.SEND_MULTIPLE_NOTIFICATIONS, {
+        userIds: [user._id],
+        title: "new login",
+        body: JSON.stringify({
+          message: `there is new login from ${platform()}`,
+          notificationId: notificationDB._id.toString(),
+          userId: user._id,
+        }),
+        notificationId: notificationDB._id,
+      });
+      user.lastLoginAt = new Date();
+      user.save();
+    }
 
     return {
       message: "Login successful",

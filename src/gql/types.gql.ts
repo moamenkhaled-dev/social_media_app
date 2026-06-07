@@ -16,6 +16,11 @@ import {
   GraphQLChatTypeEnum,
   GraphQLLanguageEnum,
   GraphQLMessageTypeEnum,
+  GraphQLReportActionEnum,
+  GraphQLReportPriorityEnum,
+  GraphQLReportReasonEnum,
+  GraphQLReportStatusEnum,
+  GraphQLReportTargetTypeEnum,
   GraphQLShowFollowEnum,
 } from "../common/enums/gql.enums.js";
 
@@ -266,6 +271,40 @@ class GraphQLTypes {
       showInRecommendations: { type: GraphQLBoolean },
       allowNotifications: { type: GraphQLBoolean },
       allowGroupAdding: { type: GraphQLBoolean },
+    },
+  });
+
+  //one report type
+  oneReportType = new GraphQLObjectType({
+    name: "oneReportType",
+    fields: {
+      _id: { type: new GraphQLNonNull(GraphQLID) },
+      reporterId: { type: new GraphQLNonNull(GraphQLString) },
+      targetType: { type: new GraphQLNonNull(GraphQLReportTargetTypeEnum) },
+      targetId: { type: new GraphQLNonNull(GraphQLString) },
+      reason: { type: new GraphQLNonNull(GraphQLReportReasonEnum) },
+      customReason: { type: GraphQLString },
+      snapshot: { type: GraphQLString },
+      createdAt: { type: GraphQLString },
+      updatedAt: { type: GraphQLString },
+    },
+  });
+
+  //one moderation case type
+  oneModerationCaseType = new GraphQLObjectType({
+    name: "oneModerationCaseType",
+    fields: {
+      _id: { type: new GraphQLNonNull(GraphQLID) },
+      targetId: { type: new GraphQLNonNull(GraphQLID) },
+      targetType: { type: new GraphQLNonNull(GraphQLReportTargetTypeEnum) },
+      reportsCount: { type: GraphQLInt },
+      priority: { type: new GraphQLNonNull(GraphQLReportPriorityEnum) },
+      status: { type: new GraphQLNonNull(GraphQLReportStatusEnum) },
+      actionTaken: { type: GraphQLReportActionEnum },
+      lastReason: { type: GraphQLString },
+      actorId: { type: GraphQLID },
+      createdAt: { type: GraphQLString },
+      updatedAt: { type: GraphQLString },
     },
   });
 }

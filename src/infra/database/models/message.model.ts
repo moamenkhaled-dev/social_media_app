@@ -25,6 +25,7 @@ const messageSchema = new Schema<IMessage>(
     attachments: [String],
     replyToMessageId: { type: Types.ObjectId, ref: "Message" },
     isEdited: Boolean,
+    reportsCount: { type: Number, default: 0 },
     deletedAt: Date,
   },
   {

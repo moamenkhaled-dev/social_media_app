@@ -43,6 +43,7 @@ const userSchema = new Schema<IUser, Model<IUser, any, IUserMethod>>(
     bannedAt: Date,
     banReason: { type: String, maxlength: 50 },
     banCancelledAt: Date,
+    reportsCount: { type: Number, default: 0 },
     deactivatedAt: Date,
     deactivatedReason: {
       type: String,

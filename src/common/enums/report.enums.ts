@@ -12,28 +12,37 @@ export enum ReportReasonEnum {
 
 export enum ReportStatusEnum {
   PENDING = "PENDING",
+  OPENED = "OPENED",
   UNDER_REVIEW = "UNDER_REVIEW",
   RESOLVED = "RESOLVED",
   REJECTED = "REJECTED",
 }
 
 export enum ReportActionEnum {
-  NONE = "NONE",
-  WARNED = "WARNED",
-  HIDDEN = "HIDDEN",
-  DELETED = "DELETED",
-  BANNED = "BANNED",
+  NO_ACTION = "NoAction",
+  CONTENT_REMOVED = "ContentRemoved",
+  CONTENT_RESTRICTED = "ContentRestricted",
+  WARNING_ISSUED = "WarningIssued",
+  USER_MUTED = "UserMuted",
+  USER_SUSPENDED = "UserSuspended",
+  USER_BANNED = "UserBanned",
+  ACCOUNT_DEACTIVATED = "AccountDeactivated",
+  REPORT_DUPLICATE = "ReportDuplicate",
+  ESCALATED = "Escalated",
+  OTHER = "Other",
 }
 
 export enum ReportPriorityEnum {
-  LOW = "LOW",
-  MEDIUM = "MEDIUM",
-  HIGH = "HIGH",
+  LOW = 3,
+  MEDIUM = 2,
+  HIGH = 1,
+  CRITICAL = 0,
 }
 
 export enum ReportTargetTypeEnum {
-  USER = "USER",
-  POST = "POST",
-  COMMENT = "COMMENT",
-  MESSAGE = "MESSAGE",
+  USER = "User",
+  POST = "Post",
+  CHAT = "Chat",
+  COMMENT = "Comment",
+  MESSAGE = "Message",
 }

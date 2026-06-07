@@ -18,6 +18,7 @@ export interface IPost {
   tags?: Array<Types.ObjectId | string> | undefined;
   mentions?: Array<Types.ObjectId> | undefined;
   postStatus?: PostStatusEnum | undefined;
+  reportsCount?: number;
   deletedAt?: Date | undefined;
   createdAt?: Date | undefined;
   updatedAt?: Date | undefined;

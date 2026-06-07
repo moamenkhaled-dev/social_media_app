@@ -37,44 +37,9 @@ const reportSchema = new Schema<IReport>(
         return this.reason === ReportReasonEnum.OTHER;
       },
     },
-    description: {
-      type: String,
-      trim: true,
-    },
-    snapshot: {
-      text: { type: String, trim: true },
-      mediaUrl: { type: String, trim: true },
-      username: { type: String, trim: true },
-    },
-    status: {
-      type: String,
-      enum: ReportStatusEnum,
-      default: ReportStatusEnum.PENDING,
-    },
-    reviewedBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-    },
-    reviewedAt: {
-      type: Date,
-    },
-    actionTaken: {
-      type: String,
-      enum: ReportActionEnum,
-      default: ReportActionEnum.NONE,
-    },
-    isDuplicate: {
-      type: Boolean,
-      default: false,
-    },
-    duplicateOf: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Report",
-      },
-    ],
+    snapshot: { type: String, trim: true },
     priority: {
-      type: String,
+      type: Number,
       enum: ReportPriorityEnum,
       default: ReportPriorityEnum.LOW,
     },

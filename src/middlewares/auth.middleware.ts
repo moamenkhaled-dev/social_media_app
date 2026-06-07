@@ -10,6 +10,8 @@ import { TokenTypeEnum } from "../common/enums/security.enums.js";
 import { tokenService } from "../common/services/token.service.js";
 import type { IGQqlContext } from "../common/types/gql.js";
 import type { IAuth } from "../modules/auth/auth.js";
+import type { HydratedDocument } from "mongoose";
+import type { IUser } from "../common/interfaces/user.interfaces.js";
 
 //authentication
 export const authentication = (
@@ -43,6 +45,19 @@ export const restFullApiAuthorization = (roles: Array<RoleEnum>) => {
 
     next();
   };
+};
+
+//graphQL authorization
+export const GraphQLAuthorization = async ({
+  user,
+  allowedRoles,
+}: {
+  user: HydratedDocument<IUser>;
+  allowedRoles: Array<RoleEnum>;
+}) => {
+  if (!allowedRoles.includes(user.role)) {
+    throw new ForbiddenError(`you are not authorized`);
+  }
 };
 
 //gql authentication

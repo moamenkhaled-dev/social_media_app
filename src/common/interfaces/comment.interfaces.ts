@@ -12,6 +12,7 @@ export interface IComment {
   mentions?: Array<Types.ObjectId>;
   commentStatusEnum?: CommentStatusEnum;
   folderId: string;
+  reportsCount?: number;
   deletedAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;

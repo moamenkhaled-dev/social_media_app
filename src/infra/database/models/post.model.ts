@@ -32,6 +32,7 @@ const postSchema = new Schema<IPost>(
       enum: PostStatusEnum,
       default: PostStatusEnum.PROCESSING,
     },
+    reportsCount: { type: Number, default: 0 },
     deletedAt: Date,
   },
   {

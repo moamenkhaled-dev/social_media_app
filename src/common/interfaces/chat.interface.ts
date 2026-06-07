@@ -10,6 +10,7 @@ export interface IChat {
   roomId?: string;
   creator?: Types.ObjectId;
   admins?: Array<Types.ObjectId>;
+  reportsCount?: number;
   deletedAt?: Date;
   restoredAt?: Date;
   createdAt?: Date;

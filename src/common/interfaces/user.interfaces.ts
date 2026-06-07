@@ -23,6 +23,7 @@ export interface IUser {
   deactivatedAt?: Date;
   deactivatedReason: DeactivatedReasonEnum;
   reactivatedAt?: Date;
+  reportsCount?: number;
   deletedAt?: Date;
   restoredAt?: Date;
   createdAt?: Date;

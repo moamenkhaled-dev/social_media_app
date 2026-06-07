@@ -8,8 +8,10 @@ import {
 import z from "zod";
 import { FollowStatusEnum } from "../enums/follow.enums.js";
 import {
+  ReportActionEnum,
   ReportPriorityEnum,
   ReportReasonEnum,
+  ReportStatusEnum,
   ReportTargetTypeEnum,
 } from "../enums/report.enums.js";
 import type { CountryCode } from "libphonenumber-js/max";
@@ -57,9 +59,6 @@ export const generalValidationFields = {
       .refine((v) => Types.ObjectId.isValid(v), { error: "invalid id" }),
   ),
   arrayStrings: z.array(z.string()),
-  //   postStatus: z.enum(PostStatusEnum),
-  //   commentStatus: z.enum(CommentStatusEnum),
-  //   messageType: z.enum(MessageTypeEnum),
   url: z.url(),
   mimeType: z.string(),
   size: z.number().max(2 * 1024 * 1024),
@@ -70,9 +69,11 @@ export const generalValidationFields = {
   pushStatus: z.enum(PushStatusEnum).default(PushStatusEnum.PENDING),
   reportTargetType: z.enum(ReportTargetTypeEnum),
   reason: z.enum(ReportReasonEnum),
+  priority: z.enum(ReportPriorityEnum),
+  reportAction: z.enum(ReportActionEnum),
+  reportStatus: z.enum(ReportStatusEnum),
   customReason: z.string(),
   description: z.string(),
-  priority: z.enum(ReportPriorityEnum),
   allowNotifications: z.boolean(),
   showInSearch: z.boolean(),
   showInRecommendations: z.boolean(),

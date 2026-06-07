@@ -29,7 +29,7 @@ const chatSchema = new Schema<IChat>(
         return this.type === ChatTypeEnum.OVM;
       },
     },
-
+    reportsCount: { type: Number, default: 0 },
     deletedAt: Date,
     restoredAt: Date,
   },

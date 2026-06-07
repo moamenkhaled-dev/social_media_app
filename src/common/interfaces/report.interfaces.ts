@@ -12,19 +12,8 @@ export interface IReport {
   targetType: ReportTargetTypeEnum;
   targetId: Types.ObjectId;
   reason: ReportReasonEnum;
-  customReason?: string;
-  description?: string;
-  snapshot?: {
-    text?: string;
-    mediaUrl?: string;
-    username?: string;
-  };
-  status: ReportStatusEnum;
-  reviewedBy?: Types.ObjectId;
-  reviewedAt?: Date;
-  actionTaken?: ReportActionEnum;
-  isDuplicate: boolean;
-  duplicateOf?: Array<Types.ObjectId>;
+  customReason?: string | undefined;
+  snapshot?: string | undefined;
   priority: ReportPriorityEnum;
   createdAt?: Date;
   updatedAt?: Date;

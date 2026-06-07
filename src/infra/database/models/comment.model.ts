@@ -18,6 +18,7 @@ const commentSchema = new Schema<IComment>(
       enum: CommentStatusEnum,
       default: CommentStatusEnum.ACTIVE,
     },
+    reportsCount: { type: Number, default: 0 },
     deletedAt: Date,
   },
   {

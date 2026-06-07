@@ -10,6 +10,13 @@ import { LogoutFlagEnum } from "./security.enums.js";
 import { ChatTypeEnum } from "./chat.enums.js";
 import { MessageTypeEnum } from "./message.enums.js";
 import { ShowFollowEnum } from "./settings.enums.js";
+import {
+  ReportActionEnum,
+  ReportPriorityEnum,
+  ReportReasonEnum,
+  ReportStatusEnum,
+  ReportTargetTypeEnum,
+} from "./report.enums.js";
 
 //gender
 export const GQLGenderEnum = new GraphQLEnumType({
@@ -102,5 +109,73 @@ export const GraphQLLanguageEnum = new GraphQLEnumType({
   values: {
     Arabic: { value: LanguageEnum.ARABIC },
     English: { value: LanguageEnum.ENGLISH },
+  },
+});
+
+//report reason
+export const GraphQLReportReasonEnum = new GraphQLEnumType({
+  name: "GraphQLReportReasonEnum",
+  values: {
+    SPAM: { value: ReportReasonEnum.SPAM },
+    HARASSMENT: { value: ReportReasonEnum.HARASSMENT },
+    HATE_SPEECH: { value: ReportReasonEnum.HATE_SPEECH },
+    NUDITY: { value: ReportReasonEnum.NUDITY },
+    VIOLENCE: { value: ReportReasonEnum.VIOLENCE },
+    SCAM: { value: ReportReasonEnum.SCAM },
+    COPYRIGHT: { value: ReportReasonEnum.COPYRIGHT },
+    IMPERSONATION: { value: ReportReasonEnum.IMPERSONATION },
+    OTHER: { value: ReportReasonEnum.OTHER },
+  },
+});
+
+//report target type
+export const GraphQLReportTargetTypeEnum = new GraphQLEnumType({
+  name: "GraphQLReportTargetTypeEnum",
+  values: {
+    User: { value: ReportTargetTypeEnum.USER },
+    Post: { value: ReportTargetTypeEnum.POST },
+    Chat: { value: ReportTargetTypeEnum.CHAT },
+    Comment: { value: ReportTargetTypeEnum.COMMENT },
+    Message: { value: ReportTargetTypeEnum.MESSAGE },
+  },
+});
+
+//report status
+export const GraphQLReportStatusEnum = new GraphQLEnumType({
+  name: "GraphQLReportStatusEnum",
+  values: {
+    PENDING: { value: ReportStatusEnum.PENDING },
+    UNDER_REVIEW: { value: ReportStatusEnum.UNDER_REVIEW },
+    RESOLVED: { value: ReportStatusEnum.RESOLVED },
+    REJECTED: { value: ReportStatusEnum.REJECTED },
+  },
+});
+
+//report action
+export const GraphQLReportActionEnum = new GraphQLEnumType({
+  name: "GraphQLReportActionEnum",
+  values: {
+    NoAction: { value: ReportActionEnum.NO_ACTION },
+    ContentRemoved: { value: ReportActionEnum.CONTENT_REMOVED },
+    ContentRestricted: { value: ReportActionEnum.CONTENT_RESTRICTED },
+    WarningIssued: { value: ReportActionEnum.WARNING_ISSUED },
+    UserMuted: { value: ReportActionEnum.USER_MUTED },
+    UserSuspended: { value: ReportActionEnum.USER_SUSPENDED },
+    UserBanned: { value: ReportActionEnum.USER_BANNED },
+    AccountDeactivated: { value: ReportActionEnum.ACCOUNT_DEACTIVATED },
+    ReportDuplicate: { value: ReportActionEnum.REPORT_DUPLICATE },
+    Escalated: { value: ReportActionEnum.ESCALATED },
+    Other: { value: ReportActionEnum.OTHER },
+  },
+});
+
+//report priority
+export const GraphQLReportPriorityEnum = new GraphQLEnumType({
+  name: "GraphQLReportPriorityEnum",
+  values: {
+    LOW: { value: ReportPriorityEnum.LOW },
+    MEDIUM: { value: ReportPriorityEnum.MEDIUM },
+    HIGH: { value: ReportPriorityEnum.HIGH },
+    CRITICAL: { value: ReportPriorityEnum.CRITICAL },
   },
 });
