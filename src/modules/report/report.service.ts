@@ -14,9 +14,11 @@ import {
 } from "../../infra/repository/index.js";
 import { realtimeGateWay } from "../realtime/realtime.gateway.js";
 import type {
+  GraphQLReviewModerationCaseDto,
   OpenModerationCaseDto,
   OpenReportDto,
   ReportDto,
+  ReviewModerationCaseDto,
   TakeActionForModerationCaeDto,
 } from "./report.js";
 import {
@@ -224,6 +226,37 @@ class ReportService {
     if (!moderationCase) {
       throw new NotFoundError(`Moderation case not found`);
     }
+
+    return moderationCase;
+  }
+
+  //review moderation case
+  async reviewModerationCase(
+    inputs: ReviewModerationCaseDto,
+  ): Promise<HydratedDocument<IModerationCase>> {
+    const { user, moderationCaseId } = inputs;
+    const moderationCase = await this.moderationCaseRepository.findOneAndUpdate(
+      {
+        filter: { _id: moderationCaseId, status: ReportStatusEnum.PENDING },
+        update: {
+          $push: { reviewedBy: user._id },
+          $set: {
+            reviewedAt: new Date(),
+            status: ReportStatusEnum.UNDER_REVIEW,
+          },
+        },
+      },
+    );
+    if (!moderationCase) {
+      throw new NotFoundError(`Moderation case not found`);
+    }
+    await this.redis.incrementModerationCaseVersion({});
+    await this.redis.incrementModerationCaseVersion({ moderationCaseId });
+    const socketIds = await this.redis.getSockets(user._id);
+    this.realtime.getIo.to(socketIds).emit("review_moderation_case", {
+      reviewerId: user._id,
+      moderationCaseId,
+    });
 
     return moderationCase;
   }

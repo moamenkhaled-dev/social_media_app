@@ -8,6 +8,7 @@ import { GQLValidate } from "../../../middlewares/validation.middleware.js";
 import { endpoints } from "../report.authorization.js";
 import type {
   GraphQLReportDto,
+  GraphQLReviewModerationCaseDto,
   GraphQLTakeActionForModerationCaeDto,
   OpenModerationCaseDto,
   OpenReportDto,
@@ -86,7 +87,34 @@ class ReportResolver {
     });
     //service
     const moderationCase = await this.reportService.openModerationCase({
-      moderationCaseId,
+      ...validatedData,
+    });
+
+    return { message: "Success", data: moderationCase };
+  };
+
+  //review moderation case
+  reviewModerationCase = async (
+    parent: any,
+    { moderationCaseId }: GraphQLReviewModerationCaseDto,
+    context: IGQqlContext,
+  ): Promise<{ message: string; data: HydratedDocument<IModerationCase> }> => {
+    //authentication
+    const { user } = await GQLAuthentication({ context });
+    //authorization
+    await GraphQLAuthorization({
+      user,
+      allowedRoles: endpoints.reportsAndModerationCases,
+    });
+    //validation
+    const validatedData = await GQLValidate<GraphQLReviewModerationCaseDto>({
+      schema: this.reportValidation.openModerationCase,
+      args: { moderationCaseId },
+    });
+    //service
+    const moderationCase = await this.reportService.reviewModerationCase({
+      user,
+      ...validatedData,
     });
 
     return { message: "Success", data: moderationCase };

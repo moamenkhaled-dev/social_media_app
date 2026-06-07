@@ -47,6 +47,14 @@ class ReportGraphQLSchema {
         args: this.reportArgs.takeActionForModerationCase,
         resolve: this.reportResolver.takeActionForModerationCase,
       },
+
+      //review moderation case
+      reviewModerationCase: {
+        description: `admin review moderation case`,
+        type: this.reportType.reviewModerationCaseType,
+        args: this.reportArgs.openModerationCase,
+        resolve: this.reportResolver.reviewModerationCase,
+      },
     };
   }
 }

@@ -16,6 +16,8 @@ export interface IModerationCase {
   customAction?: string;
   lastReason?: string;
   actorId?: Types.ObjectId;
+  reviewedAt?: Date;
+  reviewedBy: Array<Types.ObjectId>;
   createdAt: Date;
   updatedAt: Date;
 }

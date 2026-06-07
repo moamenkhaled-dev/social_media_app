@@ -11,6 +11,14 @@ export type OpenModerationCaseDto = z.infer<
   typeof reportValidation.openModerationCase
 >;
 
+export type ReviewModerationCaseDto = z.infer<
+  typeof reportValidation.reviewModerationCase
+> &
+  IAuth;
+export type GraphQLReviewModerationCaseDto = z.infer<
+  typeof reportValidation.reviewModerationCase
+>;
+
 export type TakeActionForModerationCaeDto = z.infer<
   typeof reportValidation.takeActionForModerationCae
 > &
