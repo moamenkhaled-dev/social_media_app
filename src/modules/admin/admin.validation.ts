@@ -14,6 +14,11 @@ class AdminValidation {
 
   //banned users list
   bannedUsersList = z.strictObject({}).extend(PaginateValidation.shape);
+
+  //admin confirm user email
+  adminDeleteUser = z.strictObject({
+    targetUserId: generalValidationFields.id,
+  });
 }
 
 export const adminValidation = new AdminValidation();

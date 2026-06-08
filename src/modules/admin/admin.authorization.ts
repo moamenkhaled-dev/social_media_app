@@ -6,4 +6,7 @@ export const endPoints = {
 
   //banned users list
   bannedUsersList: [RoleEnum.ADMIN, RoleEnum.MODERATOR, RoleEnum.SUPER_ADMIN],
+
+  //admin delete user
+  adminDeleteUser: [RoleEnum.ADMIN, RoleEnum.MODERATOR, RoleEnum.SUPER_ADMIN],
 };

@@ -7,6 +7,7 @@ import { GQLValidate } from "../../../middlewares/validation.middleware.js";
 import { endPoints } from "../admin.authorization.js";
 import type { IBannedUsersListResponse } from "../admin.entity.js";
 import type {
+  AdminDeleteUserDto,
   BannedUsersListDto,
   GraphQLBanDto,
   GraphQLUnBanDto,
@@ -79,6 +80,27 @@ class AdminResolver {
     const users = await this.adminService.bannedUsersList({ ...validatedData });
 
     return { message: "Success", data: users };
+  };
+
+  //admin delete user
+  adminDeleteUser = async (
+    parent: any,
+    { targetUserId }: AdminDeleteUserDto,
+    context: IGQqlContext,
+  ): Promise<{ message: string }> => {
+    //authentication
+    const { user } = await GQLAuthentication({ context });
+    //authorization
+    await GraphQLAuthorization({ user, allowedRoles: endPoints.adminDeleteUser });
+    //validation
+    const validatedData = await GQLValidate<AdminDeleteUserDto>({
+      schema: this.adminValidation.adminDeleteUser,
+      args: { targetUserId },
+    });
+    //service
+    await this.adminService.adminDeleteUser({ ...validatedData });
+
+    return { message: "Success" };
   };
 }
 

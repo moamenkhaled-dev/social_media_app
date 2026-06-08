@@ -11,3 +11,7 @@ export type GraphQLUnBanDto = z.infer<typeof adminValidation.unBan>;
 export type BannedUsersListDto = z.infer<
   typeof adminValidation.bannedUsersList
 >;
+
+export type AdminDeleteUserDto = z.infer<
+  typeof adminValidation.adminDeleteUser
+>;
