@@ -14,8 +14,6 @@ class ProfileGraphQLType {
           fields: {
             profile: { type: this.graphQLTypes.oneProfileType },
             stats: { type: this.graphQLTypes.oneStatsType },
-            email: { type: GraphQLString },
-            phone: { type: GraphQLString },
           },
         }),
       },
@@ -32,9 +30,6 @@ class ProfileGraphQLType {
           fields: {
             profile: { type: this.graphQLTypes.oneProfileType },
             stats: { type: new GraphQLNonNull(this.graphQLTypes.oneStatsType) },
-            email: { type: GraphQLString },
-            phone: { type: GraphQLString },
-            lastSeenAt: { type: GraphQLString },
           },
         }),
       },

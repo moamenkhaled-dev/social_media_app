@@ -49,13 +49,5 @@ const profileSchema = new Schema<IProfile>(
   },
 );
 
-//relation
-profileSchema.virtual("posts", {
-  localField: "ownerId",
-  foreignField: "authorId",
-  ref: "Post",
-  justOne: true,
-});
-
 //export model
 export const Profile = model<IProfile>("Profile", profileSchema);

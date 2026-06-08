@@ -91,11 +91,11 @@ class RedisService {
   userKey({ id, version }: CacheUserPayLoadType): string {
     return `${this.userBaseKey({ id, version })}::Root`;
   }
-  userProfileKey({ id, version }: CacheUserPayLoadType): string {
-    return `${this.userBaseKey({ id, version })}::Profile`;
+  profileVersionKey(userId: Types.ObjectId | string): string {
+    return `Profile::User::${userId}`;
   }
-  wholeProfileKey({ id, version }: CacheUserPayLoadType): string {
-    return `${this.userBaseKey({ id, version })}::Whole_Profile`;
+  profileKey({ id, version }: CacheUserPayLoadType): string {
+    return `${this.userBaseKey({ id, version })}::Profile`;
   }
   postVersionKey({
     userId,
@@ -310,6 +310,37 @@ class RedisService {
     version: number;
   }): string {
     return `ModerationCase::${page}::${limit}::${search}::v${version}`;
+  }
+  storyListVersionKey(userId: Types.ObjectId | string): string {
+    return `Story::User::${userId}::version`;
+  }
+  storyListKey({
+    userId,
+    version,
+  }: {
+    userId: Types.ObjectId | string;
+    version: number;
+  }): string {
+    return `Story::User::${userId}::v${version}`;
+  }
+  storyKey(storyId: Types.ObjectId | string): string {
+    return `Story::${storyId}`;
+  }
+  bannedUsersListVersion(): string {
+    return `BannedUsers::Version`;
+  }
+  bannedUsersList({
+    page,
+    limit,
+    search,
+    version,
+  }: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    version: number;
+  }): string {
+    return `BannedUsers::${page}::${limit}::${search}::v${version}`;
   }
 
   //Core Operations
@@ -584,6 +615,22 @@ class RedisService {
 
     return await this.incr(key);
   }
+  async getProfileVersion(userId: Types.ObjectId | string): Promise<number> {
+    const key = this.profileVersionKey(userId);
+    const previous = await this.client.set(key, "1", {
+      condition: "NX",
+      GET: true,
+    });
+
+    return previous ? Number(previous) : 1;
+  }
+  async incrementProfileVersion(
+    userId: Types.ObjectId | string,
+  ): Promise<number> {
+    const key = this.profileVersionKey(userId);
+
+    return await this.incr(key);
+  }
   async getPostVersion({
     userId,
     postId = "List",
@@ -780,6 +827,36 @@ class RedisService {
     moderationCaseId?: Types.ObjectId | string;
   }): Promise<number> {
     const key = this.moderationCaseVersionKey(moderationCaseId);
+
+    return await this.incr(key);
+  }
+  async getStoryListVersion(userId: Types.ObjectId | string): Promise<number> {
+    const key = this.storyListVersionKey(userId);
+    const previous = await this.client.set(key, "1", {
+      condition: "NX",
+      GET: true,
+    });
+
+    return previous ? Number(previous) : 1;
+  }
+  async incrementStoryListVersion(
+    userId: Types.ObjectId | string,
+  ): Promise<number> {
+    const key = this.storyListVersionKey(userId);
+
+    return await this.incr(key);
+  }
+  async getBannedUsersListVersion(): Promise<number> {
+    const key = this.bannedUsersListVersion();
+    const previous = await this.client.set(key, "1", {
+      condition: "NX",
+      GET: true,
+    });
+
+    return previous ? Number(previous) : 1;
+  }
+  async incrementBannedUsersListVersion(): Promise<number> {
+    const key = this.bannedUsersListVersion();
 
     return await this.incr(key);
   }

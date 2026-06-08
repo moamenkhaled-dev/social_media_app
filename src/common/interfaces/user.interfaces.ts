@@ -1,3 +1,4 @@
+import type { Types } from "mongoose";
 import type {
   DeactivatedReasonEnum,
   ProviderEnum,
@@ -7,7 +8,7 @@ import type {
 
 //fields
 export interface IUser {
-  email: string;
+  email?: string;
   password?: string;
   phone?: string | undefined;
   role: RoleEnum;
@@ -18,6 +19,7 @@ export interface IUser {
   lastLoginAt?: Date;
   lastSeenAt?: Date;
   bannedAt?: Date;
+  adminBanner: Types.ObjectId | string;
   banReason?: string;
   banCancelledAt?: Date;
   deactivatedAt?: Date;

@@ -89,12 +89,39 @@ class GraphQLTypes {
     }),
   });
 
+  //author id
+  // private oneAuthorType = new GraphQLObjectType({
+  //   name: "oneAuthorType",
+  //   fields: () => ({
+  //     _id: { type: new GraphQLNonNull(GraphQLID) },
+  //     username: { type: new GraphQLNonNull(GraphQLString) },
+  //     avatarUrl: { type: GraphQLString },
+  //   }),
+  // });
+
+  private oneAuthorType = new GraphQLObjectType({
+    name: "oneAuthorType",
+    fields: () => ({
+      _id: { type: new GraphQLNonNull(GraphQLID) },
+      profile: {
+        type: new GraphQLObjectType({
+          name: "postAuthorProfileType",
+          fields: {
+            ownerId: { type: new GraphQLNonNull(GraphQLID) },
+            username: { type: new GraphQLNonNull(GraphQLID) },
+            avatarUrl: { type: GraphQLString },
+          },
+        }),
+      },
+    }),
+  });
+
   //post
   onePostType: GraphQLObjectType = new GraphQLObjectType({
     name: "onePostType",
     fields: () => ({
       _id: { type: GraphQLID },
-      authorId: { type: this.oneUserType },
+      authorId: { type: this.oneAuthorType },
       content: { type: GraphQLString },
       media: { type: new GraphQLList(GraphQLString) },
       postVisibility: { type: GQLPostVisibilityEnum },
@@ -108,12 +135,35 @@ class GraphQLTypes {
     }),
   });
 
+  //story like
+  oneStoryLikeType = new GraphQLObjectType({
+    name: "oneStoryLikeType",
+    fields: () => ({
+      actorId: { type: this.oneAuthorType },
+      like: { type: GraphQLString },
+    }),
+  });
+
+  //story
+  oneStoryType = new GraphQLObjectType({
+    name: "oneStoryType",
+    fields: () => ({
+      _id: { type: GraphQLID },
+      ownerId: { type: this.oneAuthorType },
+      content: { type: GraphQLString },
+      media: { type: GraphQLString },
+      likes: { type: new GraphQLList(this.oneStoryLikeType) },
+      likesCount: { type: new GraphQLNonNull(GraphQLInt) },
+      createdAt: { type: GraphQLString },
+    }),
+  });
+
   //profile
   oneProfileType = new GraphQLObjectType({
     name: "oneProfileType",
     fields: () => ({
       _id: { type: GraphQLID },
-      ownerId: { type: GraphQLID },
+      ownerId: { type: this.profileOwnerType },
       username: { type: GraphQLString },
       joinedAt: { type: GraphQLString },
       avatarUrl: { type: GraphQLString },
@@ -127,6 +177,14 @@ class GraphQLTypes {
       relationship: { type: GQLRelationEnum },
       visibility: { type: GQLProfileVisibilityEnum },
       lastLoginAt: { type: GraphQLString },
+    }),
+  });
+
+  profileOwnerType = new GraphQLObjectType({
+    name: "profileOwnerType",
+    fields: () => ({
+      email: { type: GraphQLString },
+      phone: { type: GraphQLString },
       posts: { type: this.onePostType },
     }),
   });
@@ -138,7 +196,6 @@ class GraphQLTypes {
       _id: { type: GraphQLID },
       email: { type: GraphQLString },
       phone: { type: GraphQLString },
-      profile: { type: this.oneProfileType },
     }),
   });
 
@@ -148,7 +205,7 @@ class GraphQLTypes {
     fields: () => ({
       _id: { type: new GraphQLNonNull(GraphQLID) },
       postId: { type: new GraphQLNonNull(GraphQLID) },
-      authorId: { type: new GraphQLNonNull(this.oneUserType) },
+      authorId: { type: new GraphQLNonNull(this.oneAuthorType) },
       content: { type: GraphQLString },
       media: { type: new GraphQLList(GraphQLString) },
       likesCount: { type: GraphQLInt },
@@ -162,7 +219,7 @@ class GraphQLTypes {
     name: "oneChatType",
     fields: () => ({
       _id: { type: new GraphQLNonNull(GraphQLID) },
-      participants: { type: new GraphQLList(this.oneUserType) },
+      participants: { type: new GraphQLList(this.oneAuthorType) },
       type: { type: GraphQLChatTypeEnum },
       lastMessage: { type: GraphQLString },
       groupName: { type: GraphQLString },
@@ -178,7 +235,7 @@ class GraphQLTypes {
     name: "oneMessageType",
     fields: () => ({
       _id: { type: new GraphQLNonNull(GraphQLID) },
-      senderId: { type: this.oneUserType },
+      senderId: { type: this.oneAuthorType },
       type: { type: GraphQLMessageTypeEnum },
       content: { type: GraphQLString },
       attachments: { type: new GraphQLList(GraphQLString) },
@@ -303,6 +360,8 @@ class GraphQLTypes {
       actionTaken: { type: GraphQLReportActionEnum },
       lastReason: { type: GraphQLString },
       actorId: { type: GraphQLID },
+      reviewedAt: { type: GraphQLString },
+      reviewedBy: { type: new GraphQLList(GraphQLID) },
       createdAt: { type: GraphQLString },
       updatedAt: { type: GraphQLString },
     },

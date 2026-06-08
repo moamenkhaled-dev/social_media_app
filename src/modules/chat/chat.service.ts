@@ -164,7 +164,8 @@ class ChatService {
         populate: [
           {
             path: "participants",
-            populate: [{ path: "profile", select: "username avatarUrl" }],
+            select: "_id",
+            populate: [{ path: "profile", select: "_id username avatarUrl" }],
           },
         ],
       },
@@ -204,7 +205,19 @@ class ChatService {
       fn: () =>
         this.messageRepository.find({
           filter,
-          options: { sort: { createdAt: -1 }, limit: limit + 1 },
+          options: {
+            sort: { createdAt: -1 },
+            limit: limit + 1,
+            populate: [
+              {
+                path: "senderId",
+                select: "_id",
+                populate: [
+                  { path: "profile", select: "_id username avatarUrl" },
+                ],
+              },
+            ],
+          },
         }),
     });
     if (!messages) {

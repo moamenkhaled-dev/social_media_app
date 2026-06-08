@@ -18,15 +18,16 @@ import { ProfileVisibilityEnum } from "../../common/enums/profile.enums.js";
 import type { IStats } from "../../common/interfaces/stats.interfaces.js";
 import type { ISettings } from "../../common/interfaces/settings.interfaces.js";
 import type { IUser } from "../../common/interfaces/user.interfaces.js";
+import { InternalServerError } from "../../common/errors/server.errors.js";
 
-export type OwnerProfileResponse = {
+export type OwnerProfileprofile = {
   profile: HydratedDocument<IProfile>;
   stats: HydratedDocument<IStats>;
   email: string | undefined;
   phone: string | undefined;
 };
 
-export type ProfileResponse = {
+export type Profileprofile = {
   profile: Partial<IProfile> | HydratedDocument<IProfile>;
   stats: HydratedDocument<IStats>;
   email?: string | undefined;
@@ -52,187 +53,210 @@ class ProfileService {
     this.userRepository = new UserRepository();
   }
 
-  private async fetchProfile(
-    ownerId: Types.ObjectId | string,
-  ): Promise<HydratedDocument<IProfile> | null> {
-    const version = await this.redis.getUserVersion(ownerId);
-    return this.redis.cache<HydratedDocument<IProfile> | null>({
-      key: this.redis.userProfileKey({ id: ownerId, version }),
-      ttl: CacheTTL.PROFILE,
-      fn: () =>
-        this.profileRepository.findOne({
-          filter: { ownerId },
-          options: { populate: [{ path: "posts" }] },
-        }),
-    });
-  }
-  private async fetchStats(
-    ownerId: Types.ObjectId | string,
-  ): Promise<HydratedDocument<IStats> | null> {
-    const version = await this.redis.getUserVersion(ownerId);
+  // private async fetchProfile(
+  //   ownerId: Types.ObjectId | string,
+  // ): Promise<HydratedDocument<IProfile> | null> {
+  //   const version = await this.redis.getUserVersion(ownerId);
+  //   return this.redis.cache<HydratedDocument<IProfile> | null>({
+  //     key: this.redis.userProfileKey({ id: ownerId, version }),
+  //     ttl: CacheTTL.PROFILE,
+  //     fn: () =>
+  //       this.profileRepository.findOne({
+  //         filter: { ownerId },
+  //         options: { populate: [{ path: "posts" }] },
+  //       }),
+  //   });
+  // }
+  // private async fetchStats(
+  //   ownerId: Types.ObjectId | string,
+  // ): Promise<HydratedDocument<IStats> | null> {
+  //   const version = await this.redis.getUserVersion(ownerId);
 
-    return this.redis.cache<HydratedDocument<IStats> | null>({
-      key: this.redis.userStatsKey({ id: ownerId, version }),
-      ttl: CacheTTL.STATS,
-      fn: () => this.statsRepository.findOne({ filter: { ownerId } }),
-    });
-  }
-  private async buildOwnerResponse(
-    user: HydratedDocument<IUser>,
-    profile: HydratedDocument<IProfile>,
-  ): Promise<OwnerProfileResponse> {
-    const wholeProfileVersion = await this.redis.getUserVersion(user._id);
-    const wholeProfileKey = this.redis.wholeProfileKey({
-      id: user._id,
-      version: wholeProfileVersion,
-    });
-    const cached = await this.redis.get<OwnerProfileResponse>(wholeProfileKey);
-    if (cached) return cached;
+  //   return this.redis.cache<HydratedDocument<IStats> | null>({
+  //     key: this.redis.userStatsKey({ id: ownerId, version }),
+  //     ttl: CacheTTL.STATS,
+  //     fn: () => this.statsRepository.findOne({ filter: { ownerId } }),
+  //   });
+  // }
+  // private async buildOwnerprofile(
+  //   user: HydratedDocument<IUser>,
+  //   profile: HydratedDocument<IProfile>,
+  // ): Promise<OwnerProfileprofile> {
+  //   const wholeProfileVersion = await this.redis.getUserVersion(user._id);
+  //   const wholeProfileKey = this.redis.wholeProfileKey({
+  //     id: user._id,
+  //     version: wholeProfileVersion,
+  //   });
+  //   const cached = await this.redis.get<OwnerProfileprofile>(wholeProfileKey);
+  //   if (cached) return cached;
 
-    const stats = await this.fetchStats(user._id);
-    if (!stats) throw new NotFoundError("Something went wrong");
-    const response: OwnerProfileResponse = {
-      profile,
-      stats,
-      email: user.email ?? undefined,
-      phone: user.phone ?? undefined,
-    };
-    await this.redis.set({
-      key: wholeProfileKey,
-      value: response,
-      options: { expiration: { type: "EX", value: CacheTTL.PROFILE } },
-    });
+  //   const stats = await this.fetchStats(user._id);
+  //   if (!stats) throw new NotFoundError("Something went wrong");
+  //   const profile: OwnerProfileprofile = {
+  //     profile,
+  //     stats,
+  //     email: user.email ?? undefined,
+  //     phone: user.phone ?? undefined,
+  //   };
+  //   await this.redis.set({
+  //     key: wholeProfileKey,
+  //     value: profile,
+  //     options: { expiration: { type: "EX", value: CacheTTL.PROFILE } },
+  //   });
 
-    return response;
-  }
+  //   return profile;
+  // }
 
   //profile
-  async profile(inputs: IAuth): Promise<OwnerProfileResponse> {
-    const { user } = inputs;
-    const wholeProfileVersion = await this.redis.getUserVersion(user._id);
-    const wholeProfileKey = this.redis.wholeProfileKey({
-      id: user._id,
-      version: wholeProfileVersion,
-    });
-    const cached = await this.redis.get<OwnerProfileResponse>(wholeProfileKey);
-    if (cached) return cached;
-    const [profile, stats] = await Promise.all([
-      this.fetchProfile(user._id),
-      this.fetchStats(user._id),
-    ]);
-    if (!profile) throw new NotFoundError("Profile not found");
-    if (!stats) throw new NotFoundError("Something went wrong");
-    const response: OwnerProfileResponse = {
-      profile,
-      stats,
-      email: user.email ?? undefined,
-      phone: user.phone ?? undefined,
-    };
-    await this.redis.set({
-      key: wholeProfileKey,
-      value: response,
-      options: { expiration: { type: "EX", value: CacheTTL.PROFILE } },
-    });
 
-    return response;
+  async profile(
+    inputs: IAuth,
+  ): Promise<{ profile: HydratedDocument<IProfile>; stats: IStats }> {
+    const { user } = inputs;
+    const profileVersion = await this.redis.getProfileVersion(user._id);
+    const profileKey = this.redis.profileKey({
+      id: user._id,
+      version: profileVersion,
+    });
+    const statsVersion = await this.redis.getStatsVersion(user._id);
+    const statsKey = this.redis.userStatsKey({
+      id: user._id,
+      version: statsVersion,
+    });
+    const [profile, stats] = await Promise.all([
+      //profile
+      this.redis.cache({
+        key: profileKey,
+        ttl: CacheTTL.PROFILE,
+        fn: () =>
+          this.profileRepository.findOne({
+            filter: { ownerId: user._id },
+            options: {
+              populate: [
+                {
+                  path: "ownerId",
+                  select: "email phone _id",
+                  populate: [{ path: "posts" }],
+                },
+              ],
+            },
+          }),
+      }),
+      //stats
+      this.redis.cache({
+        key: statsKey,
+        ttl: CacheTTL.STATS,
+        fn: () =>
+          this.statsRepository.findOne({
+            filter: { ownerId: user._id },
+          }),
+      }),
+    ]);
+    if (!profile || !stats) {
+      throw new InternalServerError(
+        `Something went wrong please try again later`,
+      );
+    }
+    console.log({ profile, stats });
+
+    return { profile, stats };
   }
 
   //get profile by id
-  async getProfileById(inputs: GetProfileByIdDto): Promise<ProfileResponse> {
+  async getProfileById(
+    inputs: GetProfileByIdDto,
+  ): Promise<{ profile: any; stats: IStats }> {
     const { user, targetId } = inputs;
-    const targetUser = await this.userRepository.findOne({
-      filter: { _id: targetId },
-      projection: "email phone lastSeenAt",
-    });
-    if (!targetUser) throw new NotFoundError("User not found");
-    const userProfile = await this.fetchProfile(targetUser._id);
-    if (!userProfile) throw new NotFoundError("Profile not found");
-    if (user._id.toString() === userProfile.ownerId.toString()) {
-      const ownerRes = await this.buildOwnerResponse(targetUser, userProfile);
-      return {
-        profile: ownerRes.profile,
-        stats: ownerRes.stats,
-        email: ownerRes.email,
-        phone: ownerRes.phone,
-      };
+    if (user._id.equals(targetId)) {
+      return await this.profile({ user });
     }
-    const [settingsVersion, statsVersion] = await Promise.all([
-      this.redis.getUserVersion(targetUser._id),
-      this.redis.getUserVersion(targetUser._id),
-    ]);
-    const [isBlocked, settings, stats, isFollower] = await Promise.all([
+    const version = await this.redis.getSettingsVersion(targetId);
+    const key = this.redis.settingsKey({ userId: targetId, version });
+    const [
+      isFollower,
+      targetSettings,
+      isBlock,
+      targetUser,
+      targetProfile,
+      stats,
+    ] = await Promise.all([
+      //isFollower
+      this.followRepository.findOne({
+        filter: { followerId: user._id, followingId: targetId },
+      }),
+      //settings
+      this.redis.cache({
+        key,
+        ttl: CacheTTL.SETTINGS,
+        fn: () =>
+          this.settingsRepository.findOne({ filter: { ownerId: targetId } }),
+      }),
+      //isBlock
       this.blockRepository.findOne({
         filter: {
           $or: [
-            { blockerId: user._id, blockedId: targetUser._id },
-            { blockerId: targetUser._id, blockedId: user._id },
+            { blockerId: user._id, blockedId: targetId },
+            { blockerId: targetId, blockedId: user._id },
           ],
         },
       }),
-      this.redis.cache<HydratedDocument<ISettings> | null>({
-        key: this.redis.settingsKey({
-          userId: targetUser._id,
-          version: settingsVersion,
-        }),
-        ttl: CacheTTL.SETTINGS,
-        fn: () =>
-          this.settingsRepository.findOne({
-            filter: { ownerId: targetUser._id },
-          }),
+      //targetUser
+      this.userRepository.findOne({ filter: { _id: targetId } }),
+      //targetProfile
+      this.profileRepository.findOne({
+        filter: { ownerId: targetId },
+        options: {
+          populate: [
+            {
+              path: "ownerId",
+              select: "_id email phone",
+              populate: [{ path: "posts" }],
+            },
+          ],
+        },
       }),
-      this.redis.cache<HydratedDocument<IStats> | null>({
-        key: this.redis.userStatsKey({
-          id: targetUser._id,
-          version: statsVersion,
-        }),
+      this.redis.cache({
+        key,
         ttl: CacheTTL.STATS,
         fn: () =>
-          this.statsRepository.findOne({ filter: { ownerId: targetUser._id } }),
-      }),
-      this.followRepository.findOne({
-        filter: { followerId: user._id, followingId: targetUser._id },
+          this.statsRepository.findOne({ filter: { ownerId: targetId } }),
       }),
     ]);
-    if (!settings || !stats || isBlocked) {
-      throw new NotFoundError("User not found");
+    if (!targetSettings || !targetUser || isBlock || !targetProfile || !stats) {
+      throw new NotFoundError(`User not found`);
     }
-    if (
-      !isFollower &&
-      userProfile.visibility === ProfileVisibilityEnum.PRIVATE
-    ) {
-      return {
-        profile: {
-          username: userProfile.username,
-          avatarUrl: userProfile.avatarUrl,
-          ownerId: userProfile.ownerId,
-          _id: userProfile._id,
-        },
-        stats,
-      };
+    if (!isFollower) {
+      if (targetProfile.visibility === ProfileVisibilityEnum.PRIVATE) {
+        return {
+          profile: {
+            _id: targetProfile._id,
+            ownerId: targetProfile.ownerId,
+            username: targetProfile.username,
+            avatarUrl: targetProfile.avatarUrl,
+          },
+          stats,
+        };
+      }
     }
-    const profile: ProfileResponse["profile"] = {
-      ownerId: userProfile.ownerId,
-      username: userProfile.username,
-      gender: userProfile.gender,
-    };
-    const response: ProfileResponse = { profile, stats };
-    if (settings.privacy.showDOB) profile.DOB = userProfile.DOB ?? undefined;
-    if (settings.privacy.showEducation)
-      profile.education = userProfile.education ?? undefined;
-    if (settings.privacy.showJoinedAt)
-      profile.joinedAt = userProfile.joinedAt ?? undefined;
-    if (settings.privacy.showLocation)
-      profile.location = userProfile.location ?? undefined;
-    if (settings.privacy.showRelation)
-      profile.relationship = userProfile.relationship ?? undefined;
-    if (settings.privacy.showEmail)
-      response.email = targetUser.email ?? undefined;
-    if (settings.privacy.showPhone)
-      response.phone = targetUser.phone ?? undefined;
-    if (settings.privacy.showLastSeen)
-      response.lastSeenAt = targetUser.lastSeenAt ?? undefined;
+    const profile = targetProfile.toObject();
 
-    return response;
+    if (targetSettings.privacy.showDOB === false) delete profile.DOB;
+    if (targetSettings.privacy.showEducation === false)
+      delete profile.education;
+    if (targetSettings.privacy.showJoinedAt === false) delete profile.joinedAt;
+    if (targetSettings.privacy.showLocation === false) delete profile.location;
+    if (targetSettings.privacy.showRelation === false)
+      delete profile.relationship;
+    if (profile.ownerId) {
+      if (targetSettings.privacy.showEmail === false)
+        delete (profile.ownerId as IUser).email;
+      if (targetSettings.privacy.showPhone === false)
+        delete (profile.ownerId as IUser).phone;
+      if (targetSettings.privacy.showLastSeen === false)
+        delete (profile.ownerId as IUser).lastSeenAt;
+    }
+
+    return { profile, stats };
   }
 
   //get stats

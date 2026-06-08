@@ -41,11 +41,4 @@ const messageSchema = new Schema<IMessage>(
 //indexes
 messageSchema.index({ chatId: 1, createdAt: -1 });
 
-//virtual relations
-messageSchema.virtual("sender", {
-  localField: "senderId",
-  foreignField: "_id",
-  ref: "User",
-});
-
 export const Message = model<IMessage>("Message", messageSchema);

@@ -62,7 +62,8 @@ class PostService {
   private readonly postPopulateOptions = [
     {
       path: "authorId",
-      populate: [{ path: "profile", select: "username avatarUrl" }],
+      select: "_id",
+      populate: [{ path: "profile", select: "_id username avatarUrl" }],
     },
     {
       path: "comments",
@@ -70,7 +71,8 @@ class PostService {
       populate: [
         {
           path: "authorId",
-          populate: [{ path: "profile", select: "username avatarUrl" }],
+          select: "_id",
+          populate: [{ path: "profile", select: "_id username avatarUrl" }],
         },
       ],
     },
@@ -128,7 +130,6 @@ class PostService {
       await post.save();
     }
     const notificationDB = await this.notification.createOneNotification({
-      recipientId: user._id,
       actorId: user._id,
       notificationType: NotificationTypeEnum.SYSTEM,
       notificationTargetType: NotificationTargetTypeEnum.POST,
@@ -383,6 +384,7 @@ class PostService {
             limit: safeLimit,
           }),
       });
+
       return { message: "Success", posts };
     }
 

@@ -4,6 +4,7 @@ import type {
   ProfileVisibilityEnum,
   RelationEnum,
 } from "../enums/profile.enums.js";
+import type { IUser } from "./user.interfaces.js";
 
 export interface ILocation {
   country?: string;
@@ -11,7 +12,7 @@ export interface ILocation {
 }
 
 export interface IProfile {
-  ownerId: Types.ObjectId;
+  ownerId: Types.ObjectId | IUser;
   username: string;
   joinedAt?: Date | undefined;
   avatarUrl?: string | undefined;

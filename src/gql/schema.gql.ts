@@ -10,6 +10,8 @@ import { followGraphQLSchema } from "../modules/follow/gql/follow.schema.gql.js"
 import { blockGraphQLSchema } from "../modules/block/gql/block.schema.gql.js";
 import { settingsGraphQLSchema } from "../modules/settings/index.js";
 import { reportGraphQLSchema } from "../modules/report/gql/report.schema.gql.js";
+import { storyGraphQLSchema } from "../modules/story/gql/story.schema.gql.js";
+import { adminGraphQLSchema } from "../modules/admin/gql/admin.schema.gql.js";
 
 const query = new GraphQLObjectType({
   name: "query",
@@ -25,6 +27,8 @@ const query = new GraphQLObjectType({
     ...blockGraphQLSchema.registerQuery(),
     ...settingsGraphQLSchema.registerQuery(),
     ...reportGraphQLSchema.registerQuery(),
+    ...storyGraphQLSchema.registerQuery(),
+    ...adminGraphQLSchema.registerQuery(),
   },
 });
 
@@ -39,6 +43,8 @@ const mutation = new GraphQLObjectType({
     ...profileGraphQLSchema.registerMutation(),
     ...settingsGraphQLSchema.registerMutation(),
     ...blockGraphQLSchema.registerMutation(),
+    ...storyGraphQLSchema.registerMutation(),
+    ...adminGraphQLSchema.registerMutation(),
   },
 });
 

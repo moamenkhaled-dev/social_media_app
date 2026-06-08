@@ -311,7 +311,10 @@ class CommentService {
             populate: [
               {
                 path: "authorId",
-                populate: [{ path: "profile", select: "username avatarUrl" }],
+                select: "_id",
+                populate: [
+                  { path: "profile", select: "_id username avatarUrl" },
+                ],
               },
             ],
           },

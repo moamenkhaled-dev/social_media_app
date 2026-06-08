@@ -1,4 +1,4 @@
-import { model, Model, Schema } from "mongoose";
+import { model, Model, Schema, Types } from "mongoose";
 
 import type {
   IUser,
@@ -42,6 +42,7 @@ const userSchema = new Schema<IUser, Model<IUser, any, IUserMethod>>(
     lastSeenAt: Date,
     bannedAt: Date,
     banReason: { type: String, maxlength: 50 },
+    adminBanner: { type: Types.ObjectId, ref: "User" },
     banCancelledAt: Date,
     reportsCount: { type: Number, default: 0 },
     deactivatedAt: Date,
@@ -78,6 +79,13 @@ userSchema.virtual("comments", {
   localField: "_id",
   foreignField: "authorId",
   ref: "Comment",
+  justOne: true,
+});
+//relation
+userSchema.virtual("posts", {
+  localField: "_id",
+  foreignField: "authorId",
+  ref: "Post",
   justOne: true,
 });
 
